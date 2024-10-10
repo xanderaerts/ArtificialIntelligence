@@ -11,7 +11,6 @@ class Program
         while (!ttt.Full())
         {
             int position = ttt.SmartPlayer();
-            Console.WriteLine(position + "pos");
             if (player == 'X') {
                 Console.Write($"Place {player} on: ");
                 position = Convert.ToInt32(Console.ReadLine());
