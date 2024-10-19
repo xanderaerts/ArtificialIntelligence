@@ -1,0 +1,44 @@
+SL(1)                                                                                                       General Commands Manual                                                                                                       SL(1)
+
+NAME
+       sl - display animations aimed to correct users who accidentally enter sl instead of ls.
+
+SYNOPSIS
+       sl [ -acdeFlw ]
+
+DESCRIPTION
+       sl Displays animations aimed to correct users who accidentally enter sl instead of ls.  SL stands for Steam Locomotive.
+
+       -a     An accident is occurring. People cry for help.
+
+       -c     C51 appears instead of D51.
+
+       -d     Disco mode. Alternate colors during animation.
+
+       -e     Escape. Allow interrupt by Ctrl+C.
+
+       -F     It flies like the galaxy express 999.
+
+       -G     It's French like Oscar.
+
+       -c     C51 appears instead of D51.
+
+       -<number of cars>
+              Specify the number of cars like `sl -5`.
+
+       -l     Little version.
+
+       -w     Windy day. Locomotive moves faster.
+
+       -v     Prints the version and last updated.
+
+SEE ALSO
+       ls(1)
+
+BUGS
+       It sometimes lists directory contents.
+
+AUTHOR
+       Toyoda Masashi (mtoyoda@acm.org)
+
+                                                                                                         March 19, 2019 - Version 5.04                                                                                                    SL(1)

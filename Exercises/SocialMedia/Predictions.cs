@@ -1,16 +1,15 @@
 using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipes;
-using System.Runtime.InteropServices;
-using System.Security;
 
 namespace SocialMedia
 {
     public class Predictions
     {
 
-        public double m {get; set;}
+        private string[] inputFileLines;
+        private int inputLenght;
+
+        public double m1 {get; set;}
+        public double m2 {get;set;}
         public double b {get; set;}
         public double r2 {get; set;}
 
@@ -20,65 +19,91 @@ namespace SocialMedia
         private double[] x2 {get;set;}
         private double[] y {get;set;}
         
+
+        private double[] predictedValues;
+        
         public void Predict(string var1,string var2){
             
             string[] columns = {"Sentiment","Platform","Text","Hours","Hashtags","Retweets"};
         
             if(var1 == columns[0] ) this.Sentiment(1);
-            if(var1 == columns[1] ) {}
-            if(var1 == columns[2] ) {}
+            if(var1 == columns[1] ) this.Platform(1);
+            if(var1 == columns[2] ) this.Text(1);
             if(var1 == columns[3] ) this.Hours(1);
-            if(var1 == columns[4] ) {}
-            if(var1 == columns[5] ) {} 
+            if(var1 == columns[4] ) this.Hashtags(1);
+            if(var1 == columns[5] ) this.Retweets(1);
 
                 
             if(var2 == columns[0] ) this.Sentiment(2);
-            if(var2 == columns[1] ) {}
+            if(var2 == columns[1] ) this.Platform(1);
+            if(var2 == columns[2] ) this.Text(2);
             if(var2 == columns[3] ) this.Hours(2);
-            if(var2 == columns[4] ) {}
-            if(var2 == columns[5] ){}
+            if(var2 == columns[4] ) this.Hashtags(2);
+            if(var2 == columns[5] )this.Retweets(2);
 
             getY();
             Train();
+        }
 
-            
-        
+        public Predictions(){
+            this.inputFileLines = File.ReadAllLines(this.inputFile);
+            this.inputFileLines = this.inputFileLines.Skip(1).ToArray(); //remove first header line
+            this.inputLenght = this.inputFileLines.Length;
         }
 
         public void Train(){
             
-            double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-            double[] x = new double[this.x1.Length];
+            double sumX1 = 0,sumX2 = 0, sumY = 0, sumX1Y = 0, sumX2X2 = 0,sumX2Y=0,sumX1X1 = 0,sumX1X2 = 0,meanY = 0;
 
-            for(int i = 0; i < this.x1.Length;i++){
-                x[i] = this.x1[i] + this.x2[1];
-            }
+            int n = this.x1.Length;
 
-            int n = x.Length;
-
-            sumX = x.Sum();
+            sumX1 = this.x1.Sum();
+            sumX2 = this.x2.Sum();
             sumY = this.y.Sum();
+            meanY = this.y.Average();
+            
+            for(int i = 0; i < this.x1.Length;i++){
+                sumX1Y += x1[i] * y[i];
+                sumX2Y += x2[i] * y[i];
 
+                sumX1X1 += x1[i] * x1[i];
+                sumX2X2 += x2[i] * x2[i];
 
-            for(int i = 0; i < x.Length;i++){
-                sumXY += x[i] * y[i];
-                sumX2 += x[i] * x[i];
+                sumX1X2 += x1[i] * x2[i];
+            }
+            this.m1 = ((n * sumX1Y - sumX1 * sumY) - (sumX1X2 * (n * sumX2Y - sumX2 * sumY)) / (n * sumX2X2 - Math.Pow(sumX2, 2))) / (n * sumX1X1 - Math.Pow(sumX1, 2));
+            this.m2 = ((n * sumX2Y - sumX2 * sumY) - (sumX1X2 * (n * sumX1Y - sumX1 * sumY)) / (n * sumX1X1 - Math.Pow(sumX1, 2)))/ (n * sumX2X2 - Math.Pow(sumX2, 2));
+	
+            this.b = (sumY - (m1 * sumX1)- (m2*sumX2)) / n;
+
+            this.PredictAll();
+
+            double ssTot = 0,ssRes = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                ssTot += Math.Pow(this.y[i] - meanY, 2);
+                ssRes += Math.Pow(this.y[i] - this.predictedValues[i], 2);
+            }
+            this.r2 = 1 - (ssRes / ssTot);
+        }
+
+        private void PredictAll(){
+            double[] predictedY = new double[this.y.Length];
+            for (int i = 0; i < this.y.Length; i++)
+            {
+                predictedY[i] = this.b + this.m1 * this.x1[i] + this.m2 * this.x2[i];
             }
 
-            this.m = ((n * sumXY) - (sumX * sumY)) / (n * sumX2 - Math.Pow(sumX, 2));
-	
-            this.b = (sumY - (m * sumX)) / n;
-
-            this.r2 = Math.Pow((n * sumXY - sumX * sumY) / Math.Sqrt((n * sumX2 - sumX * sumX) * (n * Math.Pow(sumY,2) - sumY * sumY)), 2);
+            this.predictedValues = predictedY;
         }
 
         private void getY(){
-            string[] lines = File.ReadAllLines(this.inputFile);
-            double[] y = new double[lines.Length - 1 ];
+            double[] y = new double[this.inputLenght];
 
             int i = 0; 
 
-            foreach(string line in lines.Skip(1)){
+            foreach(string line in this.inputFileLines){
                 y[i] = Convert.ToDouble(line.Split(";")[9]);
                 i++;
             }
@@ -88,40 +113,39 @@ namespace SocialMedia
 
         private void Sentiment(int pos){
 
-           Console.WriteLine("test sentiment start");
+            /*
+                Positive = 1
+                Neutral = 0
+                Negative = -1
+            */
 
             List<string> positive = new List<string>();
             List<string> neutral = new List<string>();
             List<string> negative = new List<string>();
 
-            string[] lines = File.ReadAllLines("sentiments.txt");
-
-            for(int i = 0; i < lines.Length;i++){
-                if(lines[i] == "Positive"){
-                    while(lines[i] != "" && i < lines.Length){
-                        positive.Add(lines[i]);
+            for(int i = 0; i < this.inputLenght;i++){
+                if (this.inputFileLines[i] == "Positive"){
+                    while (this.inputFileLines[i] != "" && i < this.inputLenght){
+                        positive.Add (this.inputFileLines[i]);
                         i++;
                     }
                 }
-                else if(lines[i] == "Neutral"){
-                    while(lines[i] != "" && i < lines.Length){
-                        neutral.Add(lines[i]);
+                else if (this.inputFileLines[i] == "Neutral"){
+                    while (this.inputFileLines[i] != "" && i < this.inputLenght){
+                        neutral.Add(this.inputFileLines[i]);
                         i++;
                     }
                 }
-                else if(lines[i] == "Negative"){
-                    while(lines[i] != "" && i < lines.Length-1){
-                        negative.Add(lines[i]);
+                else if (this.inputFileLines[i] == "Negative"){
+                    while (this.inputFileLines[i] != "" && i < this.inputLenght-1){
+                        negative.Add (this.inputFileLines[i]);
                         i++;
                     }
                 }
             }
-
-            lines = File.ReadAllLines(this.inputFile);
-
             List<double> sentimentScores = new List<double>();
 
-            foreach(string line in lines.Skip(1)){
+            foreach(string line in this.inputFileLines){
                 string sentiment = line.Split(";")[3].Trim();
 
                 if(positive.Contains(sentiment)){
@@ -143,16 +167,13 @@ namespace SocialMedia
         }
 
         private void Hours(int pos){
+            
 
-            Console.WriteLine("test hours start");
-
-            string[] lines = File.ReadAllLines(this.inputFile);
-
-            double[] hours = new double[lines.Length - 1];
+            double[] hours = new double[this.inputLenght];
 
             int i = 0;
 
-            foreach(string line in lines.Skip(1)){
+            foreach(string line in this.inputFileLines){
                 hours[i] = Convert.ToDouble(line.Split(";")[14]);
                 i++;
             }
@@ -161,5 +182,74 @@ namespace SocialMedia
             if(pos == 2) this.x2 = hours;
 
         } 
+    
+        private void Platform(int pos){
+            /*
+                Instagram = 1
+                Twitter = 2
+                Facebook = 3
+            */
+
+            double[] scores = new double[this.inputLenght];
+            int i = 0;
+
+            foreach(string line in this.inputFileLines){
+                string platform = line.Split(";")[6];
+
+                if(platform == "Instagram")scores[i] = 1;
+                if(platform == "Twitter") scores[i] = 2;
+                if(platform == "Facebook") scores[i] = 3;
+                i++;
+            }
+
+            if(pos == 1) this.x1 = scores;
+            if(pos == 2) this.x2 = scores;
+        }
+
+        private void Text(int pos){
+            double[] length = new double[this.inputLenght];
+            int i = 0; 
+
+            foreach(string line in this.inputFileLines){
+                length[i] = line.Split(";")[2].Count();
+                i++;
+            }
+
+            if(pos == 1) this.x1 = length;
+            if(pos == 2) this.x2 = length;
+        }
+        private void Hashtags(int pos){
+            double[] hashtags = new double[inputLenght];
+
+            int i = 0; 
+            foreach(string line in this.inputFileLines){
+                char tag = '#';
+                string text = line.Split(";")[2];
+                int count = text.Count(c => c == tag);
+
+                hashtags[i] = count;
+                i++;
+            }
+
+            if(pos == 1) this.x1 = hashtags;
+            if(pos == 2) this.x2 = hashtags;
+        }
+
+        private void Retweets(int pos){
+            double[] retweets = new double[this.inputLenght];
+
+            int i = 0;
+
+            foreach(string line in this.inputFileLines){
+                retweets[i] = Convert.ToDouble(line.Split(";")[9]);
+                i++;
+            }
+
+            if(pos == 1) this.x1 = retweets;
+            if(pos == 2) this.x2 = retweets;
+            
+        }
+    
     }
+
 }

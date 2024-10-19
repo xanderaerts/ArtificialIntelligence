@@ -7,6 +7,8 @@ namespace TicTacToe
 
         private char[] _board = new char[] {'0','1','2','3','4','5','6','7','8'};
 
+        public string ?bot {get;set;}
+
         internal bool Full(){
             foreach(char c in _board){
                 if(Char.IsDigit(c)) return false;
