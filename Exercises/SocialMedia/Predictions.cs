@@ -1,23 +1,25 @@
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 namespace SocialMedia
 {
     public class Predictions
     {
 
-        private string[] inputFileLines;
-        private int inputLenght;
+        private string[] inputFileLines {get; set;}
+        private int inputLenght {get; set;}
 
         public double m1 {get; set;}
-        public double m2 {get;set;}
+        public double m2{get; set;}
         public double b {get; set;}
         public double r2 {get; set;}
 
         private string inputFile = "sentiment.csv";
 
-        private double[] x1 {get;set;}
-        private double[] x2 {get;set;}
-        private double[] y {get;set;}
+        private double[] x1 {get; set;}
+        private double[] x2 {get; set;}
+        private double[] y {get; set;}
         
 
         private double[] predictedValues;
@@ -35,7 +37,7 @@ namespace SocialMedia
 
                 
             if(var2 == columns[0] ) this.Sentiment(2);
-            if(var2 == columns[1] ) this.Platform(1);
+            if(var2 == columns[1] ) this.Platform(2);
             if(var2 == columns[2] ) this.Text(2);
             if(var2 == columns[3] ) this.Hours(2);
             if(var2 == columns[4] ) this.Hashtags(2);
@@ -123,22 +125,24 @@ namespace SocialMedia
             List<string> neutral = new List<string>();
             List<string> negative = new List<string>();
 
-            for(int i = 0; i < this.inputLenght;i++){
-                if (this.inputFileLines[i] == "Positive"){
-                    while (this.inputFileLines[i] != "" && i < this.inputLenght){
-                        positive.Add (this.inputFileLines[i]);
+            string[] lines = File.ReadAllLines("sentiments.txt");
+
+            for(int i = 0; i < lines.Length;i++){
+                if (lines[i] == "Positive"){
+                    while (lines[i] != "" && i < lines.Length){
+                        positive.Add (lines[i]);
                         i++;
                     }
                 }
-                else if (this.inputFileLines[i] == "Neutral"){
-                    while (this.inputFileLines[i] != "" && i < this.inputLenght){
-                        neutral.Add(this.inputFileLines[i]);
+                else if (lines[i] == "Neutral"){
+                    while (lines[i] != "" && i < lines.Length){
+                        neutral.Add(lines[i]);
                         i++;
                     }
                 }
-                else if (this.inputFileLines[i] == "Negative"){
-                    while (this.inputFileLines[i] != "" && i < this.inputLenght-1){
-                        negative.Add (this.inputFileLines[i]);
+                else if (lines[i] == "Negative"){
+                    while (lines[i] != "" && i < lines.Length-1){
+                        negative.Add (lines[i]);
                         i++;
                     }
                 }
@@ -163,7 +167,7 @@ namespace SocialMedia
             }
 
             if(pos == 1) this.x1 = sentimentScores.ToArray();
-            else if(pos == 2) this.x2 = sentimentScores.ToArray();
+         if(pos == 2) this.x2 = sentimentScores.ToArray();
         }
 
         private void Hours(int pos){
