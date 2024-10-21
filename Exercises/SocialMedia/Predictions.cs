@@ -60,15 +60,7 @@ namespace SocialMedia
         }
 
         public void Train(){
-
-            /*double[] newx1 = {60,62,67,70,71,72,75,78};
-            double[] newx2 = {22,25,24,20,15,14,14,11};
-            double[] newY = {140,155,159,179,192,200,212,215};
-
-            this.x1 = newx1;
-            this.x2 = newx2;
-            this.y = newY;*/
-            
+           
             double sumX1 = 0,sumX2 = 0, sumY = 0, sumX1Y = 0, sumX2X2 = 0,sumX2Y=0,sumX1X1 = 0,sumX1X2 = 0,meanY = 0;
 
             int n = this.x1.Length;
