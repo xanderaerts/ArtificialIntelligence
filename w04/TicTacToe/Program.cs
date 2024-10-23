@@ -10,7 +10,6 @@ class Program
         int position = -1;
         char player = 'X';
         
-        
         Console.WriteLine("Welcome by TicTacToe! \n\t1.Play Against bot\n\t2.Play against other player");
 
         string ?menu_Input = Console.ReadLine();
@@ -46,7 +45,7 @@ class Program
                 Console.WriteLine(ttt.bot);
 
                 if(ttt.bot == "SmartPlayer") position = ttt.SmartPlayer();
-                //if(ttt.bot == "NaivePlayer") position = ttt.NaivePlayer();
+                if(ttt.bot == "NaivePlayer") position = ttt.NaivePlayer();
 
                 if (player == 'X') {
                     Console.Write($"Place {player} on: ");
