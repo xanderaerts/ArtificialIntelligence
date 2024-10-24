@@ -254,7 +254,7 @@ namespace SocialMedia
             int i = 0; 
             foreach(string line in this.inputFileLines){
                 char tag = '#';
-                string text = line.Split(";")[7];
+                string text = line.Split(";")[2];
                 int count = text.Count(c => c == tag);
 
                 hashtags[i] = count;
